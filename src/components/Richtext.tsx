@@ -1,45 +1,41 @@
-// src/components/Richtext.tsx
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css"; // Quill styles
+import "react-quill/dist/quill.snow.css";
+import { modules, formats } from "./quillConfig";
 
-// Define modules and formats outside the component
-const modules = {
-  toolbar: [
-    [{ header: [1, 2, false] }],
-    ["bold", "italic", "underline", "strike"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["link", "image"],
-    ["clean"],
-  ],
-};
-
-const formats = [
-  "header",
-  "bold", "italic", "underline", "strike",
-  "list", "bullet",
-  "link", "image",
-];
-
-const QuillEditor: React.FC = () => {
+const Richtext: React.FC = () => {
   const [value, setValue] = useState<string>("");
+  const quillRef = useRef<ReactQuill>(null);
 
   return (
-    <div>
+    <div style={{ maxWidth: "700px", margin: "2rem auto" }}>
+      <h2>Rich Text Editor with Code Block</h2>
+
       <ReactQuill
+        ref={quillRef}
         theme="snow"
         value={value}
         onChange={setValue}
-        modules={modules}   // Use the imported constants
+        modules={modules}
         formats={formats}
-        placeholder="Start typing..."
+        placeholder="Write something amazing..."
+        style={{ height: "300px", marginBottom: "1rem" }}
       />
-      <div style={{ marginTop: "1rem" }}>
-        <strong>Content:</strong>
-        <div>{value}</div>
+
+      {/* HTML Preview */}
+      <div>
+        <h3>HTML Preview</h3>
+        <div
+          style={{
+            border: "1px solid #ccc",
+            padding: "1rem",
+            minHeight: "100px",
+          }}
+          dangerouslySetInnerHTML={{ __html: value }}
+        />
       </div>
     </div>
   );
 };
 
-export default QuillEditor;
+export default Richtext;
