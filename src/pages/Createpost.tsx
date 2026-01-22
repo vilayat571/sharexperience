@@ -1,10 +1,20 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Createpost = () => {
-  return (
-    <div>
-      
-    </div>
-  )
-}
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
 
-export default Createpost
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
+  return <div>
+
+    Create a post
+  </div>;
+};
+
+export default Createpost;
