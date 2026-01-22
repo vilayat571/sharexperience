@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { modules, formats } from "./quillConfig";
+import { modules, formats } from "../../../quillConfig";
 
 const Richtext: React.FC = () => {
   const [value, setValue] = useState<string>("");

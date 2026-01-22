@@ -1,13 +1,11 @@
 import type { ReactNode, JSX } from "react";
 import Navbar from "./Navbar";
-import Footer from "./Footer";
 
 const Layout = ({ children }: { children: ReactNode }): JSX.Element => {
   return (
-    <div>
+    <div className="w-full ">
       <Navbar />
       {children}
-      <Footer />
     </div>
   );
 };
