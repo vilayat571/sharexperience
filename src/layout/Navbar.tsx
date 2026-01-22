@@ -1,4 +1,4 @@
-import { Search, PenSquare, LogOut } from "lucide-react";
+import {  PenSquare, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface GoogleUser {
@@ -33,10 +33,6 @@ const Navbar = ({ user }: NavbarProps) => {
           <Link to="/posts" className="hover:text-black transition gap-2 py-2">
             Read
           </Link>
-          <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-black transition">
-            <Search size={18} />
-            <span>Search</span>
-          </button>
 
           {user ? (
             <>
