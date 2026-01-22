@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import Layout from "../layout/Layout";
-import { Briefcase, User, Tag, Send, Plus, X, UserCircle, Eye, EyeOff, CheckCircle } from "lucide-react";
+import { Briefcase, User, Tag, Send, UserCircle, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { tabs, techStacksByRole } from "../data/tabs";
 import { formats, modules } from "../../quillConfig";
 
@@ -23,14 +23,15 @@ const Createpost = ({ user }: CreatepostProps) => {
 
   const [company, setCompany] = useState<string>("");
   const [companies, setCompanies] = useState<string[]>(["Anonymous"]);
-  const [showAddCompany, setShowAddCompany] = useState(false);
-  const [newCompany, setNewCompany] = useState("");
   const [role, setRole] = useState<string>("");
+  const [level, setLevel] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const levels = ["Junior", "Mid-Level", "Senior", "Lead", "Principal", "Staff"];
 
   const availableTags = role ? techStacksByRole[role] || [] : [];
 
@@ -64,6 +65,7 @@ const Createpost = ({ user }: CreatepostProps) => {
           "Adobe",
           "Salesforce",
           "Oracle",
+          "Other"
         ]);
       }
     };
@@ -76,41 +78,10 @@ const Createpost = ({ user }: CreatepostProps) => {
     );
   };
 
-  const handleAddCompany = async () => {
-    if (!newCompany.trim()) return;
-
-    try {
-      const response = await fetch("YOUR_BACKEND_API_URL/companies", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("googleToken")}`,
-        },
-        body: JSON.stringify({ name: newCompany }),
-      });
-
-      if (response.ok) {
-        setCompanies((prev) => [...prev, newCompany]);
-        setCompany(newCompany);
-        setNewCompany("");
-        setShowAddCompany(false);
-      } else {
-        alert("Failed to add company");
-      }
-    } catch (error) {
-      console.error("Error adding company:", error);
-      // Add locally even if backend fails
-      setCompanies((prev) => [...prev, newCompany]);
-      setCompany(newCompany);
-      setNewCompany("");
-      setShowAddCompany(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!company || !role || !content.trim()) {
+    if (!company || !role || !level || !content.trim()) {
       alert("Please fill in all required fields");
       return;
     }
@@ -123,6 +94,7 @@ const Createpost = ({ user }: CreatepostProps) => {
       const postData = {
         company,
         role,
+        level,
         content,
         tags: selectedTags,
         isAnonymous,
@@ -220,61 +192,19 @@ const Createpost = ({ user }: CreatepostProps) => {
                   <Briefcase size={18} />
                   Company *
                 </label>
-
-                {!showAddCompany ? (
-                  <div className="flex gap-2">
-                    <select
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition"
-                      required
-                    >
-                      <option value="">Select a company</option>
-                      {companies.map((comp) => (
-                        <option key={comp} value={comp}>
-                          {comp}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => setShowAddCompany(true)}
-                      className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center gap-2"
-                      title="Add new company"
-                    >
-                      <Plus size={18} />
-                      <span>Add</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newCompany}
-                      onChange={(e) => setNewCompany(e.target.value)}
-                      placeholder="Enter company name"
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition"
-                      autoFocus
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddCompany}
-                      className="px-4 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition"
-                    >
-                      Add
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAddCompany(false);
-                        setNewCompany("");
-                      }}
-                      className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
-                )}
+                <select
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition"
+                  required
+                >
+                  <option value="">Select a company</option>
+                  {companies.map((comp) => (
+                    <option key={comp} value={comp}>
+                      {comp}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Role Selection */}
@@ -296,6 +226,27 @@ const Createpost = ({ user }: CreatepostProps) => {
                   {tabs.map((tab) => (
                     <option key={tab.name} value={tab.name}>
                       {tab.icon} {tab.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Level Selection */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <Tag size={18} />
+                  Experience Level *
+                </label>
+                <select
+                  value={level}
+                  onChange={(e) => setLevel(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent outline-none transition"
+                  required
+                >
+                  <option value="">Select your level</option>
+                  {levels.map((lvl) => (
+                    <option key={lvl} value={lvl}>
+                      {lvl}
                     </option>
                   ))}
                 </select>

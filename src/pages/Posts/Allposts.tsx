@@ -1,19 +1,23 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../../layout/Layout";
-import { Building2, Briefcase, Code, ChevronDown, ChevronUp, Calendar, User } from "lucide-react";
-
-/* interface GoogleUser {
-  name: string;
-  email: string;
-  picture: string;
-} */
+import {
+  Building2,
+  Briefcase,
+  Code,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  User,
+  TrendingUp,
+} from "lucide-react";
 
 interface Post {
   id: string;
   title: string;
   company: string;
   role: string;
+  level: string;
   author: string;
   authorPicture: string;
   content: string;
@@ -22,29 +26,70 @@ interface Post {
   isAnonymous: boolean;
 }
 
-// Fake data for demonstration
+// Fake data for demonstration (fallback)
 const generateFakePosts = (): Post[] => {
-  const companies = ["Google", "Meta", "Amazon", "Microsoft", "Apple", "Netflix", "Tesla", "Uber"];
-  const roles = ["Frontend Developer", "Backend Developer", "Full Stack Developer", "DevOps Engineer", "Data Scientist"];
-  const techStacks = ["React", "Python", "Node.js", "AWS", "Docker", "Kubernetes", "TypeScript", "MongoDB"];
-  
+  const companies = [
+    "Google",
+    "Meta",
+    "Amazon",
+    "Microsoft",
+    "Apple",
+    "Netflix",
+    "Tesla",
+    "Uber",
+  ];
+  const roles = [
+    "Frontend Developer",
+    "Backend Developer",
+    "Full Stack Developer",
+    "DevOps Engineer",
+    "Data Scientist",
+  ];
+  const levels = [
+    "Junior",
+    "Mid-Level",
+    "Senior",
+    "Lead",
+    "Principal",
+    "Staff",
+  ];
+  const techStacks = [
+    "React",
+    "Python",
+    "Node.js",
+    "AWS",
+    "Docker",
+    "Kubernetes",
+    "TypeScript",
+    "MongoDB",
+  ];
+
   const posts: Post[] = [];
   for (let i = 1; i <= 20; i++) {
     const company = companies[Math.floor(Math.random() * companies.length)];
     const role = roles[Math.floor(Math.random() * roles.length)];
+    const level = levels[Math.floor(Math.random() * levels.length)];
     const isAnonymous = Math.random() > 0.5;
-    
+
+    const title = `My ${role} interview experience at ${company}`;
+
     posts.push({
       id: `post-${i}`,
-      title: `My ${role} experience at ${company}`,
+      title,
       company,
       role,
+      level,
       author: isAnonymous ? "Anonymous" : `User ${i}`,
       authorPicture: isAnonymous ? "" : `https://i.pravatar.cc/150?img=${i}`,
-      content: `This is a detailed experience about working as a ${role} at ${company}. The interview process was challenging but rewarding. I learned a lot about ${techStacks[Math.floor(Math.random() * techStacks.length)]} and ${techStacks[Math.floor(Math.random() * techStacks.length)]}. The team culture was amazing and I highly recommend this company for anyone looking to grow their career in tech. The benefits were great and the work-life balance was excellent...`,
-      tags: Array.from({ length: 3 }, () => techStacks[Math.floor(Math.random() * techStacks.length)]),
-      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      isAnonymous
+      content: `I recently completed the interview process for a ${role} position at ${company}. The interview process was challenging but rewarding. I learned a lot about ${techStacks[Math.floor(Math.random() * techStacks.length)]} and ${techStacks[Math.floor(Math.random() * techStacks.length)]}. The team culture was amazing and I highly recommend this company for anyone looking to grow their career in tech...`,
+      tags: Array.from(
+        { length: 3 },
+        () => techStacks[Math.floor(Math.random() * techStacks.length)],
+      ),
+      createdAt: new Date(
+        Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
+      isAnonymous,
     });
   }
   return posts;
@@ -56,86 +101,170 @@ const Allposts = () => {
   const [displayedPosts, setDisplayedPosts] = useState<Post[]>([]);
   const [page, setPage] = useState(1);
   const postsPerPage = 6;
+  const [loading, setLoading] = useState(true);
 
   // Filter states
   const [companies, setCompanies] = useState<string[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
+  const [levels, setLevels] = useState<string[]>([]);
   const [techStacks, setTechStacks] = useState<string[]>([]);
-  
+
   const [selectedCompany, setSelectedCompany] = useState<string>("");
   const [selectedRole, setSelectedRole] = useState<string>("");
+  const [selectedLevel, setSelectedLevel] = useState<string>("");
   const [selectedTech, setSelectedTech] = useState<string>("");
-  
+
   const [showCompanyFilter, setShowCompanyFilter] = useState(false);
   const [showRoleFilter, setShowRoleFilter] = useState(false);
+  const [showLevelFilter, setShowLevelFilter] = useState(false);
   const [showTechFilter, setShowTechFilter] = useState(false);
 
   // Fetch posts and filter options
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // In real app, fetch from backend
-        // const response = await fetch('YOUR_BACKEND_API_URL/posts');
-        // const data = await response.json();
+        setLoading(true);
+
+        // TODO: Replace these URLs with your actual backend API endpoints
+        const postsUrl = 'YOUR_BACKEND_API_URL/posts';
+        const companiesUrl = 'YOUR_BACKEND_API_URL/companies';
+        const rolesUrl = 'YOUR_BACKEND_API_URL/roles';
+        const levelsUrl = 'YOUR_BACKEND_API_URL/levels';
+        const techStacksUrl = 'YOUR_BACKEND_API_URL/techstacks';
+
+        // Fetch all data in parallel using Promise.all
+        const [postsRes, companiesRes, rolesRes, levelsRes, techStacksRes] = await Promise.all([
+          fetch(postsUrl).catch(() => null),
+          fetch(companiesUrl).catch(() => null),
+          fetch(rolesUrl).catch(() => null),
+          fetch(levelsUrl).catch(() => null),
+          fetch(techStacksUrl).catch(() => null),
+        ]);
+
+        // Parse responses if they exist and are ok
+        let fetchedPosts = null;
+        let fetchedCompanies = null;
+        let fetchedRoles = null;
+        let fetchedLevels = null;
+        let fetchedTechStacks = null;
+
+        if (postsRes && postsRes.ok) {
+          fetchedPosts = await postsRes.json();
+        }
+        if (companiesRes && companiesRes.ok) {
+          fetchedCompanies = await companiesRes.json();
+        }
+        if (rolesRes && rolesRes.ok) {
+          fetchedRoles = await rolesRes.json();
+        }
+        if (levelsRes && levelsRes.ok) {
+          fetchedLevels = await levelsRes.json();
+        }
+        if (techStacksRes && techStacksRes.ok) {
+          fetchedTechStacks = await techStacksRes.json();
+        }
+
+        // Use fetched data if available, otherwise use fake data
+        const postsData = (fetchedPosts && fetchedPosts.length > 0) ? fetchedPosts : generateFakePosts();
         
-        // Using fake data for now
+        setPosts(postsData);
+        setFilteredPosts(postsData);
+
+        // Set filter options - use API data if available, otherwise extract from posts
+        if (fetchedCompanies && fetchedCompanies.length > 0) {
+          setCompanies(fetchedCompanies as string[]);
+        } else {
+          const uniqueCompanies = Array.from(new Set(postsData.map((p: Post) => p.company))) as string[];
+          setCompanies(uniqueCompanies);
+        }
+
+        if (fetchedRoles && fetchedRoles.length > 0) {
+          setRoles(fetchedRoles as string[]);
+        } else {
+          const uniqueRoles = Array.from(new Set(postsData.map((p: Post) => p.role))) as string[];
+          setRoles(uniqueRoles);
+        }
+
+        if (fetchedLevels && fetchedLevels.length > 0) {
+          setLevels(fetchedLevels as string[]);
+        } else {
+          const uniqueLevels = Array.from(new Set(postsData.map((p: Post) => p.level))) as string[];
+          setLevels(uniqueLevels);
+        }
+
+        if (fetchedTechStacks && fetchedTechStacks.length > 0) {
+          setTechStacks(fetchedTechStacks as string[]);
+        } else {
+          const allTags = postsData.flatMap((p: Post) => p.tags);
+          const uniqueTechs = Array.from(new Set(allTags)) as string[];
+          setTechStacks(uniqueTechs);
+        }
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        // Fallback to fake data on error
         const fakePosts = generateFakePosts();
         setPosts(fakePosts);
         setFilteredPosts(fakePosts);
-        
-        // Extract unique values for filters
-        const uniqueCompanies = Array.from(new Set(fakePosts.map(p => p.company)));
-        const uniqueRoles = Array.from(new Set(fakePosts.map(p => p.role)));
-        const allTags = fakePosts.flatMap(p => p.tags);
-        const uniqueTechs = Array.from(new Set(allTags));
-        
+
+        // Extract unique values for filters from fake data
+        const uniqueCompanies = Array.from(new Set(fakePosts.map((p) => p.company))) as string[];
+        const uniqueRoles = Array.from(new Set(fakePosts.map((p) => p.role))) as string[];
+        const uniqueLevels = Array.from(new Set(fakePosts.map((p) => p.level))) as string[];
+        const allTags = fakePosts.flatMap((p) => p.tags);
+        const uniqueTechs = Array.from(new Set(allTags)) as string[];
+
         setCompanies(uniqueCompanies);
         setRoles(uniqueRoles);
+        setLevels(uniqueLevels);
         setTechStacks(uniqueTechs);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
   // Apply filters
   useEffect(() => {
     let filtered = posts;
-    
+
     if (selectedCompany) {
-      filtered = filtered.filter(p => p.company === selectedCompany);
+      filtered = filtered.filter((p) => p.company === selectedCompany);
     }
-    
+
     if (selectedRole) {
-      filtered = filtered.filter(p => p.role === selectedRole);
+      filtered = filtered.filter((p) => p.role === selectedRole);
     }
-    
+
+    if (selectedLevel) {
+      filtered = filtered.filter((p) => p.level === selectedLevel);
+    }
+
     if (selectedTech) {
-      filtered = filtered.filter(p => p.tags.includes(selectedTech));
+      filtered = filtered.filter((p) => p.tags.includes(selectedTech));
     }
-    
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+
     setFilteredPosts(filtered);
     setPage(1); // Reset to first page when filters change
-  }, [selectedCompany, selectedRole, selectedTech, posts]);
+  }, [selectedCompany, selectedRole, selectedLevel, selectedTech, posts]);
 
   // Update displayed posts based on pagination
   useEffect(() => {
     const startIndex = 0;
     const endIndex = page * postsPerPage;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisplayedPosts(filteredPosts.slice(startIndex, endIndex));
   }, [filteredPosts, page]);
 
   const loadMore = () => {
-    setPage(prev => prev + 1);
+    setPage((prev) => prev + 1);
   };
 
   const clearFilters = () => {
     setSelectedCompany("");
     setSelectedRole("");
+    setSelectedLevel("");
     setSelectedTech("");
   };
 
@@ -149,7 +278,7 @@ const Allposts = () => {
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
@@ -157,13 +286,28 @@ const Allposts = () => {
     return `${Math.floor(diffDays / 30)} months ago`;
   };
 
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <p className="text-gray-600">Loading experiences...</p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-8 py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">All Experiences</h1>
-            <p className="text-gray-600">Browse through {filteredPosts.length} shared experiences from the community</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              All Experiences
+            </h1>
+            <p className="text-gray-600">
+              Browse through {filteredPosts.length} shared interview experiences from the
+              community
+            </p>
           </div>
 
           <div className="flex gap-8">
@@ -171,8 +315,13 @@ const Allposts = () => {
             <aside className="w-64 shrink-0">
               <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
-                  {(selectedCompany || selectedRole || selectedTech) && (
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Filters
+                  </h2>
+                  {(selectedCompany ||
+                    selectedRole ||
+                    selectedLevel ||
+                    selectedTech) && (
                     <button
                       onClick={clearFilters}
                       className="text-sm text-gray-600 hover:text-black transition"
@@ -192,12 +341,19 @@ const Allposts = () => {
                       <Building2 size={16} />
                       Company
                     </span>
-                    {showCompanyFilter ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {showCompanyFilter ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
                   </button>
                   {showCompanyFilter && (
                     <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {companies.map(company => (
-                        <label key={company} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                      {companies.map((company) => (
+                        <label
+                          key={company}
+                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                        >
                           <input
                             type="radio"
                             name="company"
@@ -205,7 +361,9 @@ const Allposts = () => {
                             onChange={() => setSelectedCompany(company)}
                             className="w-4 h-4 text-black"
                           />
-                          <span className="text-sm text-gray-700">{company}</span>
+                          <span className="text-sm text-gray-700">
+                            {company}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -222,12 +380,19 @@ const Allposts = () => {
                       <Briefcase size={16} />
                       Role
                     </span>
-                    {showRoleFilter ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {showRoleFilter ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
                   </button>
                   {showRoleFilter && (
                     <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {roles.map(role => (
-                        <label key={role} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                      {roles.map((role) => (
+                        <label
+                          key={role}
+                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                        >
                           <input
                             type="radio"
                             name="role"
@@ -236,6 +401,43 @@ const Allposts = () => {
                             className="w-4 h-4 text-black"
                           />
                           <span className="text-sm text-gray-700">{role}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Level Filter */}
+                <div className="mb-6">
+                  <button
+                    onClick={() => setShowLevelFilter(!showLevelFilter)}
+                    className="flex items-center justify-between w-full text-sm font-medium text-gray-700 mb-3"
+                  >
+                    <span className="flex items-center gap-2">
+                      <TrendingUp size={16} />
+                      Level
+                    </span>
+                    {showLevelFilter ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
+                  </button>
+                  {showLevelFilter && (
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {levels.map((level) => (
+                        <label
+                          key={level}
+                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                        >
+                          <input
+                            type="radio"
+                            name="level"
+                            checked={selectedLevel === level}
+                            onChange={() => setSelectedLevel(level)}
+                            className="w-4 h-4 text-black"
+                          />
+                          <span className="text-sm text-gray-700">{level}</span>
                         </label>
                       ))}
                     </div>
@@ -252,12 +454,19 @@ const Allposts = () => {
                       <Code size={16} />
                       Tech Stack
                     </span>
-                    {showTechFilter ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {showTechFilter ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
                   </button>
                   {showTechFilter && (
                     <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {techStacks.map(tech => (
-                        <label key={tech} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                      {techStacks.map((tech) => (
+                        <label
+                          key={tech}
+                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                        >
                           <input
                             type="radio"
                             name="tech"
@@ -278,12 +487,14 @@ const Allposts = () => {
             <main className="flex-1">
               {displayedPosts.length === 0 ? (
                 <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                  <p className="text-gray-600">No posts found matching your filters</p>
+                  <p className="text-gray-600">
+                    No posts found matching your filters
+                  </p>
                 </div>
               ) : (
                 <>
                   <div className="space-y-6">
-                    {displayedPosts.map(post => (
+                    {displayedPosts.map((post) => (
                       <Link
                         key={post.id}
                         to={`/posts/${post.id}`}
@@ -303,8 +514,12 @@ const Allposts = () => {
                             />
                           )}
                           <div className="flex-1">
-                            <p className="font-medium text-gray-900">{post.author}</p>
+                            <p className="font-medium text-gray-900">
+                              {post.author}
+                            </p>
                             <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <span>{post.level}</span>
+                              <span>•</span>
                               <span>{post.role}</span>
                               <span>•</span>
                               <span>{post.company}</span>
@@ -349,7 +564,8 @@ const Allposts = () => {
                         Load More Posts
                       </button>
                       <p className="text-sm text-gray-600 mt-3">
-                        Showing {displayedPosts.length} of {filteredPosts.length} posts
+                        Showing {displayedPosts.length} of{" "}
+                        {filteredPosts.length} posts
                       </p>
                     </div>
                   )}
