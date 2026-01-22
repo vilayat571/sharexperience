@@ -7,19 +7,29 @@ import SinglePost from "./pages/Posts/SinglePost";
 import Createpost from "./pages/Createpost";
 import Login from "./pages/Login";
 
+import { jwtDecode } from "jwt-decode"; // Changed: named import
+
+interface GoogleUser {
+  name: string;
+  email: string;
+  picture: string;
+  // add other fields if needed
+}
+
 function App() {
   const [token, setToken] = useState<string | null>(null);
 
   // Load token from localStorage on mount
   useEffect(() => {
     const savedToken = localStorage.getItem("googleToken");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (savedToken) setToken(savedToken);
   }, []);
 
   const handleLoginSuccess = (jwtToken: string) => {
-    setToken(jwtToken);
     localStorage.setItem("googleToken", jwtToken);
+    setToken(jwtToken); // Added: update state when login succeeds
+    const user: GoogleUser = jwtDecode(jwtToken); // Changed: use jwtDecode
+    console.log("User info:", user);
   };
 
   return (

@@ -1,0 +1,30 @@
+/* 
+
+import Layout from "../layout/Layout";
+import jwt_decode from "jwt-decode";
+
+const Home = () => {
+  const token = localStorage.getItem("googleToken");
+
+  let userInfo;
+
+  if (token) {
+    userInfo = jwt_decode(token) as {
+      name: string;
+      email: string;
+      picture: string;
+    };
+  }
+
+  return (
+    <Layout>
+         <div className="min-h-screen bg-gray-50">
+        <Header />
+        <Tabs />
+      </div> 
+    </Layout>
+  );
+};
+
+export default Home;
+ */
