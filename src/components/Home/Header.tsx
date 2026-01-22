@@ -1,6 +1,6 @@
 const Header = () => {
   return (
-    <main className=" mx-auto px-8 pb-10 text-center mt-32">
+    <main className=" mx-auto px-8 pb-10 text-center mt-30">
       <h1 className="text-8xl font-bold text-gray-900 mb-3 leading-tight">
         Your guide in the
         <br />
